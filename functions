@@ -1,0 +1,36 @@
+#!/bin/bash
+
+__text() { echo -e "\e[0m${1}"; }
+__er()   { echo -e "\e[0;31m${1}\e[0m"; __exit "${2}"; }
+__inf()  { echo -e "\e[0;32m${1}\e[0m"; }
+__warn() { echo -e "\e[0;33m${1}\e[0m"; }
+__exit() { echo -e "\n\t\e[1m${1}\e[0m\n"; }
+
+__setup()
+{
+    if [[ $(which elinks 2>/dev/null) == "elinks not found" ]]; then
+        __er "Please install elinks, ex:" "sudo apt-get install -y elinks"
+    fi
+}
+
+export __html_c=0
+__html()
+{
+    setup=$(__setup)
+    if [[ $setup != "" ]]; then
+        __warn "Can't render html without elinks; Please install it!"
+    fi
+    for i in $@; do
+        if [[ $setup != "" ]]; then
+            __text $i
+        else
+            filename=/tmp/$(date +%Y%m%d%H%M%S)_${__html_c}.html
+            echo $i > $filename
+            elinks -dump -dump-color-mode 1 $filename
+            rm $filename
+            export __html_c=$(( __html_c + 1 ))
+        fi
+    done
+}
+
+__inf "Functions are included! Yey!"
