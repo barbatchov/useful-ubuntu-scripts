@@ -1,0 +1,92 @@
+#!/bin/bash
+
+_self=$(realpath $0)
+_dir=$(dirname $_self)
+_include_functions=$(echo ${_dir}/functions)
+
+source $_include_functions
+
+##
+# Run gradle single test
+#
+# @param profile Ex: test
+# @param path    Ex: com/package/Class
+__gradle_test_single()
+{
+    hlp='gradle-test-single <profile> <path>'
+    p=$(echo ${2} | sed -e 's/\.java//g' | sed -e 's/\./\//g')
+
+    if [[ "${1}" == "" ]]; then
+        __er 'Missing profile' $hlp
+    elif [[ "${2}" == "" ]]; then
+        __er 'Missing path file' $hlp
+    else
+        gradle -P${1} test -Dtest.single=${p}
+    fi
+    __inf "done!"
+}
+
+__tag_time_branch()
+{
+    tagname=$(date +%Y%m%d%H%M%S)-$(git branch | grep "*" | sed "s/* //g")
+    __inf "Generating tagname: \e[0m${tagname}"
+    git tag $tagname;
+    __inf "done!"
+}
+
+__ssh_keyscan()
+{
+    for i in $@; do
+        __inf "Inporting $i to known_hosts"
+        ssh-keyscan -t rsa,dsa $i 2>&1 | sort -u - ~/.ssh/known_hosts > ~/.ssh/tmp_hosts
+        mv ~/.ssh/tmp_hosts ~/.ssh/known_hosts
+    done
+    __inf "done!"
+}
+
+##
+# Run gradle single test
+#
+# @param fileName    Ex: foo-bar
+# @param dirLocation Ex: ./src/java/resources/db/migration
+__migration_timestamp()
+{
+    hlp='create-migration-timestamp <file-name> <dir-location>'
+    def=./src/java/resources/db/migration
+    loc=$(if [ -d ${2} ]; then echo ${2}; elif [ -d ${def} ]; then echo ${def}; else; echo ''; fi)
+    nam=V$(date +%Y%m%d%H%M%S)__${1}.sql
+
+    if [[ "${1}" == "" ]]; then
+        __er 'Missing name' $hlp
+    elif [ -d $loc ]; then
+        touch ${loc}/${nam} && __inf "Migration ${nam} created in ${loc}"
+    else
+        __er 'Missing dir location' $hlp
+    fi
+    __inf "done!"
+}
+
+__get_window_geometry()
+{
+    xwininfo -id $(xprop -root | awk '/_NET_ACTIVE_WINDOW\(WINDOW\)/{print $NF}')
+}
+
+##
+# running basic setup...
+__setup
+
+##
+# registering aliases
+alias docker_ipfrom_image='docker inspect --format "{{ .NetworkSettings.IPAddress }}" '
+alias docker_clean_images='docker rmi $(docker images -a --filter=dangling=true -q)'
+alias docker_clean_ps='docker rm $(docker ps --filter=status=exited --filter=status=created -q)'
+alias docker_killall='docker kill $(docker ps -q)'
+alias docker_vanish='docker_killall; docker_clean_ps; docker rmi $(docker images -a -q)'
+alias gradle-test-single='__gradle_test_single'
+alias git-tag-time-branch='__tag_time_branch'
+alias create-migration-timestamp='__migration_timestamp'
+alias keyscan='__ssh_keyscan'
+alias html="__html"
+alias get-window-geometry="__get_window_geometry"
+alias wine32="WINEARCH=win32 WINEPREFIX=~/.wine"
+alias wine64="WINEARCH=win64 WINEPREFIX=~/.wine64"

@@ -8,8 +8,20 @@ __exit() { echo -e "\n\t\e[1m${1}\e[0m\n"; }
 
 __setup()
 {
+    ##
+    # install elinks
     if [[ $(which elinks 2>/dev/null) == "elinks not found" ]]; then
         __er "Please install elinks, ex:" "sudo apt-get install -y elinks"
+    fi
+    
+    ##
+    # install vimcat
+    if [[ $(which vimcat 2>/dev/null) == "vimcat not found" ]]; then
+        __inf "Installing vimpager...\n"
+        git clone https://github.com/rkitover/vimpager.git /tmp/vimpager 2>/dev/null
+        cd /tmp/vimpager/
+        sudo make install-deb
+        sudo make install
     fi
 }
 
@@ -33,4 +45,19 @@ __html()
     done
 }
 
-__inf "Functions are included! Yey!"
+##
+# @param title
+# @param geometry
+# @param any...
+__term()
+{
+    #title=$(if [[ $1 == "" ]]; then echo ""; else echo "--title=$1"; fi)
+    geometry=$(if [[ $2 == "" ]]; then echo ""; else echo "--geometry=$2"; fi)
+
+    $(which gnome-terminal) $geometry $@
+}
+
+__execString()
+{
+    toExec=$1; __inf "Executing: $toExec"; $toExec
+}
