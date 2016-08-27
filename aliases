@@ -1,10 +1,11 @@
-#!/bin/bash
+#!/bin/bash -e
 
-_self=$(realpath $0)
+source ~/Scripts/common.sh
+
+_self=$(realpath $_rootdir/aliases)
 _dir=$(dirname $_self)
-_include_functions=$(echo ${_dir}/functions)
 
-source $_include_functions
+source ${_dir}/functions
 
 ##
 # Run gradle single test
@@ -90,3 +91,7 @@ alias html="__html"
 alias get-window-geometry="__get_window_geometry"
 alias wine32="WINEARCH=win32 WINEPREFIX=~/.wine"
 alias wine64="WINEARCH=win64 WINEPREFIX=~/.wine64"
+alias open-terms="~/Scripts/open-terms"
+alias ccat="__catExt"
+
+alias alias="__alias() {; alias $@ | pygmentize -s -l sh; }; __alias"

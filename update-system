@@ -1,20 +1,21 @@
-#!/bin/bash
+#!/bin/bash -e
 
-_self=$(realpath $0)
+source ~/Scripts/common.sh
+
+_self=$(realpath $_rootdir/update-system)
 _dir=$(dirname $_self)
 _term=$(which gnome-terminal)
-_include_functions=$(echo ${_dir}/functions)
-_pass=$(cat $(echo ${_dir}/.pass))
 
-source $_include_functions
+source ${_rootdir}/functions
 
 if [[ $1 == "go" ]]; then
     __inf "\nRunning updates"
-    echo ${_pass} | sudo -S aptitude update
-    echo ${_pass} | sudo -S aptitude full-upgrade -y
-    echo ${_pass} | sudo -S aptitude autoclean
+    echo "$(__getPass)" | sudo -S clear
+    sudo aptitude update
+    sudo aptitude full-upgrade -y
+    sudo aptitude autoclean
     __inf "Done!"
     sleep 5
 else
-    $_term --command "${_self} go"
+    gnome-terminal --command "${_self} go"
 fi

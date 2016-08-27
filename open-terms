@@ -1,0 +1,18 @@
+#!/bin/bash
+
+source ~/Scripts/common.sh
+
+_self=$(realpath $_rootdir/open-terms)
+_dir=$(dirname $_self)
+
+source ${_dir}/functions
+
+#__gul=133x32+0+0
+#__gur=133x32+674+0
+#__gbl=133x32+0-0
+#__gbr=133x32+674-0
+
+for i in $(find ./terms -name "*-term.sh"); do
+    source $i
+    gnome-terminal --geometry="$_geometry" --command="$(realpath $_dir/$i) go" &2>/dev/null
+done
